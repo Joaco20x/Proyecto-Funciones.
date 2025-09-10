@@ -12,15 +12,28 @@ def analizis():
             raise SyntaxError
         if " " in x:
             raise ValueError
+        solox()
         funcion= sp.sympify(texto)
     except ValueError:
         messagebox.showerror("Error", "El x a evaluar no puede contener espacios")
     except SyntaxError:
-        messagebox.showerror("Error","Funcion debe contener x")
+        messagebox.showerror("Error","Funcion debe contener solo como incognita x")
     except sp.SympifyError:
         messagebox.showerror("Error", "Función no válida")
     print(texto,x)
-
+def solox():
+    global texto
+    texto=entrada.get()
+    cadena=""
+    apropiado="x"
+    for l in texto:
+        if l.isalpha():
+            cadena+=l
+            if cadena=="sin" or cadena=="cos" or cadena=="tan":
+                cadena=""
+    for c in cadena:
+        if c!=apropiado:
+            raise SyntaxError
 root=tk.Tk()
 root.title("Analizador de funciones")
 text=tk.StringVar()
