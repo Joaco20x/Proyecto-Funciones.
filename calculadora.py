@@ -21,6 +21,26 @@ def analizis():
     except sp.SympifyError:
         messagebox.showerror("Error", "Función no válida")
     print(texto,x)
+
+def graficar():
+    texto = entrada.get()
+    try:
+        x_pri = sp.Symbol("x")
+        funcion = sp.sympify(texto)
+        x = [i/10 for i in range(0,100)]        # genera un rango en el grafico eje x
+        f = sp.lambdify(x_pri, funcion)         # toma la forma simbolica y la convierte en una funcion
+        y = [f(val) for val in x]               # rango del grafico en el eje y
+
+        plt.plot(x, y)                  # coordenadas x e y
+        plt.title(f"f(x) = {texto}")    # muestra el titulo del grafico
+        plt.xlabel("x")                 # muestra titulo eje x 
+        plt.ylabel("f(x)")              # titulo en eje y
+        plt.grid(True)                  # activa las rejillas del grafico 
+        plt.show()                      # muestra el grafico
+    except Exception:
+        messagebox.showerror("Error", f"No se pudo graficar la función")
+
+
 def solox():
     global texto
     texto=entrada.get()
@@ -51,7 +71,7 @@ entrada2= tk.Entry(root)
 entrada2.pack()
 
 tk.Button(root,text="Analizar funcion", width=13,height=1,command=analizis).pack()
-tk.Button(root,text="Graficar funcion", width=13,height=1,command=analizis).pack()
+tk.Button(root,text="Graficar funcion", width=13,height=1,command=graficar).pack()
 
 
 
