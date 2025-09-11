@@ -6,12 +6,16 @@ import matplotlib.pyplot as plt
 def analizis():
     texto=entrada.get()
     x=entrada2.get()
+    print(len(x))
     try:
         valor=texto.count("x")
         if valor==0:
             raise SyntaxError
-        if " " in x:
-            raise ValueError
+        if len(x) !=0:
+            print("dentro")
+            if " " in x:
+                print("dentro deentro")
+                raise ValueError
         solox()
         funcion= sp.sympify(texto)
     except ValueError:
