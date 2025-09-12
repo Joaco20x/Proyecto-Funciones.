@@ -127,7 +127,7 @@ def dominio():
             dominio_final=dominio_final.intersect(dominio_raiz)
     
     print("Dominio de la funcion: ", dominio_final)
-    messagebox.showinfo("Dominio", f"Dominio de la función: {dominio_final}")
+    messagebox.showinfo("Dominio", f"Dominio de la funcion: {dominio_final}")
     return dominio_final
 
 #-------------------------Recorrido---------------------------
@@ -211,65 +211,21 @@ def paso_a_paso():
 
     x = sp.Symbol("x")
     try:
-        # parsear la funcion simbolica (valida la funcion)
+        # parsear la funcion simbolica
         funcion = sp.sympify(texto)
+        valor = sp.sympify(valor_str)
 
-        # Reemplaza 'x' por '(valor)' en la cadena original para que se muestre tal cual
-        texto_sustituido = texto.replace("x", f"({valor_str})")
-
-        # Parsea la expresion sustituida SIN evaluar (para conservar 2**2 en lugar de 4)
-        expr = parse_expr(texto_sustituido, evaluate=False)
-
-        # Coleccion de pasos
         pasos = []
-        pasos.append(f"f(x) = {texto}")
-        pasos.append(f"f({valor_str}) = {texto_sustituido}")
+        pasos.append(f"f(x) = {funcion}")
+        pasos.append(f"f({valor}) = {funcion.subs(x, valor)}")
 
-        # simplifica subexpresiones numericas una por una
-        current = expr
-        # encuentra subnodos numericos no resueltos
-        while True:
-            # seleccion de subexpresiones que NO tienen símbolos libres y que no son ya un numero
-            numeric_nodes = [n for n in current.preorder_traversal()
-                            if getattr(n, "free_symbols", set()) == set() and not n.is_Number]
+        # evaluacion numerica paso a paso
+        current = funcion.subs(x, valor)
+        current = sp.N(current)
+        pasos.append(f"f({valor}) = {current}")
 
-            if not numeric_nodes:
-                break
-
-            # subexpresion mas profunda 
-            node = numeric_nodes[-1]
-            # simplificar/valuar ese nodo
-            try:
-                node_val = sp.simplify(node)
-                # si se lo convierte en numero, forzamos evaluacion numerica
-                if not node_val.is_Number:
-                    node_val = sp.N(node)
-            except Exception:
-                # evaluacion numerica
-                node_val = sp.N(node)
-
-            # Reemplaza la subexpresion por su valor
-            current = current.xreplace({node: node_val})
-
-            # Añade un paso mostrando la expresion resultante tras esa simplificacion
-            pasos.append(f"f({valor_str}) = {str(current)}")
-
-        # si la expresion no es numerica, evalua el resultado final numerico
-        resultado_final = current
-        if not resultado_final.is_Number:
-            try:
-                resultado_final = sp.N(resultado_final)
-                pasos.append(f"f({valor_str}) = {str(resultado_final)}")
-            except Exception:
-                # si no se puede evaluar numericamente, lo dejamos como esta
-                pass
-
-        # Formatea la salida para mostrarla en un messagebox
         texto_mostrar = "\n".join(pasos)
-        # si es un numero, mostramos el par ordenado final
-        if getattr(resultado_final, "is_Number", False):
-            texto_mostrar += f"\n\nPar ordenado: ({valor_str}, {resultado_final})"
-
+        texto_mostrar += f"\n\nPar ordenado: ({valor}, {current})"
         messagebox.showinfo("Desarrollo paso a paso", texto_mostrar)
 
     except sp.SympifyError:
