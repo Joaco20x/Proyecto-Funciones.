@@ -17,7 +17,7 @@ def intersecciones():
             inter_y = funcion.subs(x, 0)
             if inter_y.is_real:
                 punto_y = (0, inter_y)
-            else:
+            else:          
                 punto_y = None
         except:
             punto_y = None
@@ -42,7 +42,7 @@ def intersecciones():
 
         return inter_x, punto_y
     except Exception as e:
-        messagebox.showerror("Error", f"No se pudieron calcular las intersecciones.\nDetalles: {e}")
+        messagebox.showerror("Error", f"No se pueden calcular las intersecciones.\nDetalles: {e}")
 
 #--------------------Analizis-----------------------------------
 def analizis():
@@ -70,7 +70,7 @@ def analizis():
     except SyntaxError:
         messagebox.showerror("Error","Funcion debe contener solo como incognita x")
     except sp.SympifyError:
-        messagebox.showerror("Error", "Función no válida")
+        messagebox.showerror("Error", "Funcion no válida")
     print(texto,x)
 
 #---------------------------Dominio--------------------------------
@@ -91,18 +91,20 @@ def dominio():
     
     #verifica raiz cuadrada
     if texto.find("sqrt(")!=-1:    
-        radicandos = []       # Lista de todas las raices
+        radicandos = [] #Lista de todas las raices
         ra = ""
         capturando = False
         i = 0
         dominio_raizes=[]
         while i < len(texto):
+            
             # Detectar inicio de sqrt
             if texto[i:i+5] == "sqrt(":
                 capturando = True
                 i += 5  #Se salta sqrt
                 ra = ""
                 continue
+            
             #capturar el radicando
             if capturando:
                 if texto[i] == ")": #termino el radicando
@@ -111,6 +113,7 @@ def dominio():
                 else:
                     ra += texto[i]#cumula caracteres dentro de la raiz
             i += 1
+        
         for r in radicandos:
             radi= sp.sympify(r)
             dominio_raiz=sp.solveset(radi>=0,x,sp.S.Reals)
