@@ -1,9 +1,11 @@
+#-------------------Librerias----------------------------------
 import tkinter as tk
 from tkinter import messagebox
 import math 
 import sympy as sp
 import matplotlib.pyplot as plt
 
+#--------------------Analizis-----------------------------------
 def analizis():
     texto=entrada.get()
     x=entrada2.get()
@@ -29,6 +31,8 @@ def analizis():
     except sp.SympifyError:
         messagebox.showerror("Error", "Función no válida")
     print(texto,x)
+
+#---------------------------Dominio--------------------------------
 def dominio():
     dominio_final=sp.S.Reals #Empezando diciendo que el dominio final seran todos los reales
     texto=entrada.get()
@@ -78,8 +82,12 @@ def dominio():
     print("Dominio de la funcion: ", dominio_final)
     messagebox.showinfo("Dominio", f"Dominio de la función: {dominio_final}")
     return dominio_final
+
+#-------------------------Recorrido---------------------------
 def recorrido():
     return
+
+#-----------------------------Grafica-----------------------------------
 def graficar():
     texto = entrada.get()
     try:
@@ -110,7 +118,7 @@ def graficar():
     except Exception:
         messagebox.showerror("Error", f"No se pudo graficar la función")
 
-
+#---------------------------Solox---------------------------------------
 def solox():
     global texto
     texto=entrada.get()
@@ -124,6 +132,8 @@ def solox():
     for c in cadena:
         if c!=apropiado:
             raise SyntaxError
+
+#--------------------Variables--------------------------------------------------
 root=tk.Tk()
 root.title("Analizador de funciones")
 text=tk.StringVar()
