@@ -4,9 +4,10 @@ from tkinter import messagebox
 import math 
 import sympy as sp
 import matplotlib.pyplot as plt
+from sympy.parsing.sympy_parser import parse_expr
 
 #---------------------Intersecciones-----------------------------
-def intersecciones():
+def interseccion():
     try:
         texto = entrada.get()
         x = sp.Symbol("x")
@@ -62,7 +63,7 @@ def analizis():
         solox()
         dominio()
         recorrido()
-        intersecciones()
+        interseccion()
         funcion= sp.sympify(texto)
 
     except ValueError:
@@ -195,6 +196,87 @@ def solox():
         if c!=apropiado:
             raise SyntaxError
 
+#----------------------------------Desarrollo---------------------------------------------------
+def paso_a_paso():
+    texto = entrada.get().strip()
+    valor_str = entrada2.get().strip()
+
+    if texto == "":
+        messagebox.showerror("Error", "No hay funcion.")
+        return
+
+    if valor_str == "":
+        messagebox.showinfo("Info", "No has ingresado un valor.")
+        return
+
+    x = sp.Symbol("x")
+    try:
+        # parsear la funcion simbolica (valida la funcion)
+        funcion = sp.sympify(texto)
+
+        # Reemplaza 'x' por '(valor)' en la cadena original para que se muestre tal cual
+        texto_sustituido = texto.replace("x", f"({valor_str})")
+
+        # Parsea la expresion sustituida SIN evaluar (para conservar 2**2 en lugar de 4)
+        expr = parse_expr(texto_sustituido, evaluate=False)
+
+        # Coleccion de pasos
+        pasos = []
+        pasos.append(f"f(x) = {texto}")
+        pasos.append(f"f({valor_str}) = {texto_sustituido}")
+
+        # simplifica subexpresiones numericas una por una
+        current = expr
+        # encuentra subnodos numericos no resueltos
+        while True:
+            # seleccion de subexpresiones que NO tienen símbolos libres y que no son ya un numero
+            numeric_nodes = [n for n in current.preorder_traversal()
+                            if getattr(n, "free_symbols", set()) == set() and not n.is_Number]
+
+            if not numeric_nodes:
+                break
+
+            # subexpresion mas profunda 
+            node = numeric_nodes[-1]
+            # simplificar/valuar ese nodo
+            try:
+                node_val = sp.simplify(node)
+                # si se lo convierte en numero, forzamos evaluacion numerica
+                if not node_val.is_Number:
+                    node_val = sp.N(node)
+            except Exception:
+                # evaluacion numerica
+                node_val = sp.N(node)
+
+            # Reemplaza la subexpresion por su valor
+            current = current.xreplace({node: node_val})
+
+            # Añade un paso mostrando la expresion resultante tras esa simplificacion
+            pasos.append(f"f({valor_str}) = {str(current)}")
+
+        # si la expresion no es numerica, evalua el resultado final numerico
+        resultado_final = current
+        if not resultado_final.is_Number:
+            try:
+                resultado_final = sp.N(resultado_final)
+                pasos.append(f"f({valor_str}) = {str(resultado_final)}")
+            except Exception:
+                # si no se puede evaluar numericamente, lo dejamos como esta
+                pass
+
+        # Formatea la salida para mostrarla en un messagebox
+        texto_mostrar = "\n".join(pasos)
+        # si es un numero, mostramos el par ordenado final
+        if getattr(resultado_final, "is_Number", False):
+            texto_mostrar += f"\n\nPar ordenado: ({valor_str}, {resultado_final})"
+
+        messagebox.showinfo("Desarrollo paso a paso", texto_mostrar)
+
+    except sp.SympifyError:
+        messagebox.showerror("Error", "Funcion no valida (no se pudo interpretar).")
+    except Exception as e:
+        messagebox.showerror("Error", f"No se pudo realizar el desarrollo paso a paso.\nDetalles: {e}")
+
 #--------------------Variables--------------------------------------------------
 root=tk.Tk()
 root.title("Analizador de funciones")
@@ -207,14 +289,14 @@ entrada= tk.Entry(root)
 entrada.pack()
 
 text2=tk.StringVar()
-text2.set("x a evualar (opcional)")
+text2.set("x a evaluar (opcional)")
 tk.Label(root,textvariable=text2, font=("Arial",16)).pack()
 entrada2= tk.Entry(root)
 entrada2.pack()
 
 tk.Button(root,text="Analizar funcion", width=13,height=1,command=analizis).pack()
 tk.Button(root,text="Graficar funcion", width=13,height=1,command=graficar).pack()
-
+tk.Button(root, text="Desarrollo paso a paso", width=20, height=1, command=paso_a_paso).pack()
 
 
 root.mainloop() #esto mantendra viva la venta hasta cerrarla
