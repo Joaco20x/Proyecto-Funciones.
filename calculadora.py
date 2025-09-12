@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox
+import math 
 import sympy as sp
 import matplotlib.pyplot as plt
 
@@ -16,7 +17,10 @@ def analizis():
             if " " in x:
                 print("dentro deentro")
                 raise ValueError
+
         solox()
+        dominio()
+        recorrido()
         funcion= sp.sympify(texto)
     except ValueError:
         messagebox.showerror("Error", "El x a evaluar no puede contener espacios")
@@ -25,22 +29,84 @@ def analizis():
     except sp.SympifyError:
         messagebox.showerror("Error", "Función no válida")
     print(texto,x)
-
+def dominio():
+    dominio_final=sp.S.Reals #Empezando diciendo que el dominio final seran todos los reales
+    texto=entrada.get()
+    x=sp.Symbol("x")
+    cadena=""
+    division=texto.find("/")
+    #Para verificar denominador
+    if division!=-1:
+        l=texto.index("/")+1
+        denom=texto[l:]
+        denominador=sp.sympify(denom)
+        valores_prohibidos = sp.solveset(denominador, x, sp.S.Reals) #Nos da todos los valores que hagan que el denominador sea cero
+        dominio_final= dominio_final - valores_prohibidos #Les restamos los valores prohibidos del denominador
+    #Para verificar raiz cuadrada
+    if texto.find("sqrt(")!=-1:    
+        radicandos = []       # Lista donde guardaremos todas las raíces
+        ra = ""
+        capturando = False
+        i = 0
+        dominio_raizes=[]
+        while i < len(texto):
+            # Detectar inicio de sqrt
+            if texto[i:i+5] == "sqrt(":
+                capturando = True
+                i += 5  #Se salta sqrt( para capturar el radicando
+                ra = ""
+                continue
+            #Empezamos a capturar el radicando
+            if capturando:
+                if texto[i] == ")": #Verificamos si termino el radicando
+                    capturando = False
+                    radicandos.append(ra)   # Guardamos el radicando
+                else:
+                    ra += texto[i]          # Acumulamos caracteres dentro de la raíz
+            i += 1
+        for r in radicandos:
+            radi= sp.sympify(r)
+            dominio_raiz=sp.solveset(radi>=0,x,sp.S.Reals)
+            dominio_raizes.append(dominio_raiz)
+        if len(dominio_raizes)> 1:
+            dominio_final_raiz=dominio_raizes[0]
+            for d in dominio_raizes[1:]:
+                dominio_final=dominio_final.intersect(d)
+        else:
+            dominio_final=dominio_final.intersect(dominio_raiz)
+    
+    print("Dominio de la funcion: ", dominio_final)
+    messagebox.showinfo("Dominio", f"Dominio de la función: {dominio_final}")
+    return dominio_final
+def recorrido():
+    return
 def graficar():
     texto = entrada.get()
     try:
-        x_pri = sp.Symbol("x")
+        x_pri = sp.Symbol("x")         
         funcion = sp.sympify(texto)
-        x = [i/10 for i in range(0,100)]        # genera un rango en el grafico eje x
+        print(f"f(x) = {funcion}")
+        valor=entrada2.get()
+        
+        if valor != "":
+            num=float(valor) #Convertimos el valor ingresado por el usuario a un flotante
+            funcion_sustituida=funcion.subs(x_pri,num) #Se sustituyen todos los x por el numero ingresado por el usuario
+            print(f"Sustituimos x por: {num}")
+            resultado=sp.N(funcion_sustituida) #Se calcula el resultado
+            print(f"Resultado de la funcion: {resultado}")
+        
         f = sp.lambdify(x_pri, funcion)         # toma la forma simbolica y la convierte en una funcion
+        x = [i/10 for i in range(0,100)]        # genera un rango en el grafico eje x
         y = [f(val) for val in x]               # rango del grafico en el eje y
-
-        plt.plot(x, y)                  # coordenadas x e y
+        
+        plt.plot(x, y) 
+        plt.scatter(num, resultado, color="red", label=f"Punto ({num}, {resultado})") #Graficamos el punto  y desimos su ubicacion
         plt.title(f"f(x) = {texto}")    # muestra el titulo del grafico
         plt.xlabel("x")                 # muestra titulo eje x 
         plt.ylabel("f(x)")              # titulo en eje y
         plt.grid(True)                  # activa las rejillas del grafico 
-        plt.show()                      # muestra el grafico
+        plt.legend()
+        plt.show()    
     except Exception:
         messagebox.showerror("Error", f"No se pudo graficar la función")
 
@@ -53,7 +119,7 @@ def solox():
     for l in texto:
         if l.isalpha():
             cadena+=l
-            if cadena=="sin" or cadena=="cos" or cadena=="tan":
+            if cadena=="sin" or cadena=="cos" or cadena=="tan" or cadena=="sqrt":
                 cadena=""
     for c in cadena:
         if c!=apropiado:
