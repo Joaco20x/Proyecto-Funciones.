@@ -1,9 +1,48 @@
-#-------------------Librerias----------------------------------
+#---------------------Librerias---------------------------------
 import tkinter as tk
 from tkinter import messagebox
 import math 
 import sympy as sp
 import matplotlib.pyplot as plt
+
+#---------------------Intersecciones-----------------------------
+def intersecciones():
+    try:
+        texto = entrada.get()
+        x = sp.Symbol("x")
+        funcion = sp.sympify(texto)
+
+        # --- interseccion con eje Y ---
+        try:
+            inter_y = funcion.subs(x, 0)
+            if inter_y.is_real:
+                punto_y = (0, inter_y)
+            else:
+                punto_y = None
+        except:
+            punto_y = None
+
+        # --- intersecciones con eje X ---
+        inter_x = sp.solveset(funcion, x, sp.S.Reals)
+
+        # resultados
+        mensaje = ""
+        if punto_y:
+            mensaje += f"Interseccion con Y: {punto_y}\n"
+        else:
+            mensaje += "No hay interseccion con Y\n"
+
+        if inter_x:
+            mensaje += f"Intersecciones con X: {list(inter_x)}"
+        else:
+            mensaje += "No hay intersecciones con X"
+
+        print(mensaje)
+        messagebox.showinfo("Intersecciones", mensaje)
+
+        return inter_x, punto_y
+    except Exception as e:
+        messagebox.showerror("Error", f"No se pudieron calcular las intersecciones.\nDetalles: {e}")
 
 #--------------------Analizis-----------------------------------
 def analizis():
@@ -23,7 +62,9 @@ def analizis():
         solox()
         dominio()
         recorrido()
+        intersecciones()
         funcion= sp.sympify(texto)
+
     except ValueError:
         messagebox.showerror("Error", "El x a evaluar no puede contener espacios")
     except SyntaxError:
@@ -34,21 +75,23 @@ def analizis():
 
 #---------------------------Dominio--------------------------------
 def dominio():
-    dominio_final=sp.S.Reals #Empezando diciendo que el dominio final seran todos los reales
+    dominio_final=sp.S.Reals 
     texto=entrada.get()
     x=sp.Symbol("x")
     cadena=""
     division=texto.find("/")
-    #Para verificar denominador
+    
+    #verifica denominador
     if division!=-1:
         l=texto.index("/")+1
         denom=texto[l:]
         denominador=sp.sympify(denom)
-        valores_prohibidos = sp.solveset(denominador, x, sp.S.Reals) #Nos da todos los valores que hagan que el denominador sea cero
-        dominio_final= dominio_final - valores_prohibidos #Les restamos los valores prohibidos del denominador
-    #Para verificar raiz cuadrada
+        valores_prohibidos = sp.solveset(denominador, x, sp.S.Reals) #todos los valores que hagan que el denominador sea cero
+        dominio_final= dominio_final - valores_prohibidos #resta los valores prohibidos del denominador
+    
+    #verifica raiz cuadrada
     if texto.find("sqrt(")!=-1:    
-        radicandos = []       # Lista donde guardaremos todas las raíces
+        radicandos = []       # Lista de todas las raices
         ra = ""
         capturando = False
         i = 0
@@ -57,16 +100,16 @@ def dominio():
             # Detectar inicio de sqrt
             if texto[i:i+5] == "sqrt(":
                 capturando = True
-                i += 5  #Se salta sqrt( para capturar el radicando
+                i += 5  #Se salta sqrt
                 ra = ""
                 continue
-            #Empezamos a capturar el radicando
+            #capturar el radicando
             if capturando:
-                if texto[i] == ")": #Verificamos si termino el radicando
+                if texto[i] == ")": #termino el radicando
                     capturando = False
-                    radicandos.append(ra)   # Guardamos el radicando
+                    radicandos.append(ra)#se guarda 
                 else:
-                    ra += texto[i]          # Acumulamos caracteres dentro de la raíz
+                    ra += texto[i]#cumula caracteres dentro de la raiz
             i += 1
         for r in radicandos:
             radi= sp.sympify(r)
@@ -85,7 +128,23 @@ def dominio():
 
 #-------------------------Recorrido---------------------------
 def recorrido():
-    return
+    try:
+        texto = entrada.get()
+        x = sp.Symbol("x")
+        funcion = sp.sympify(texto)
+
+        #el dominio 
+        dominio_final = dominio()  
+
+        #rango recorrido con sympy
+        rango = sp.calculus.util.function_range(funcion, x, dominio_final)
+
+        print("Recorrido de la función:", rango)
+        messagebox.showinfo("Recorrido", f"Recorrido de la función: {rango}")
+
+        return rango
+    except Exception as e:
+        messagebox.showerror("Error", f"No se pudo calcular el recorrido.\nDetalles: {e}")
 
 #-----------------------------Grafica-----------------------------------
 def graficar():
