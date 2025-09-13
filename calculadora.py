@@ -32,14 +32,14 @@ def interseccion():
             mensaje += f"Interseccion con Y: {punto_y}\n"
         else:
             mensaje += "No hay interseccion con Y\n"
+            inter_y= "No hay intersecciones con Y"
 
         if inter_x:
             mensaje += f"Intersecciones con X: {list(inter_x)}"
         else:
             mensaje += "No hay intersecciones con X"
-
+            inter_x= "No hay intersecciones con X"
         print(mensaje)
-        messagebox.showinfo("Intersecciones", mensaje)
 
         return inter_x, punto_y
     except Exception as e:
@@ -61,9 +61,13 @@ def analizis():
                 raise ValueError
 
         solox()
-        dominio()
-        recorrido()
-        interseccion()
+        dominios=dominio()
+        recorridos= recorrido()
+        inter_x,inter_y= interseccion()
+        texto_resultados.insert("end", f"Dominio: {dominios}\n")
+        texto_resultados.insert("end", f"Recorrido: {recorridos}\n")
+        texto_resultados.insert("end", f"Intersecciones X: {inter_x}, Y: {inter_y}\n")
+        texto_resultados.insert("end","-----------------------------------------------------------------------------------------")
         funcion= sp.sympify(texto)
 
     except ValueError:
@@ -127,7 +131,6 @@ def dominio():
             dominio_final=dominio_final.intersect(dominio_raiz)
     
     print("Dominio de la funcion: ", dominio_final)
-    messagebox.showinfo("Dominio", f"Dominio de la funcion: {dominio_final}")
     return dominio_final
 
 #-------------------------Recorrido---------------------------
@@ -144,7 +147,6 @@ def recorrido():
         rango = sp.calculus.util.function_range(funcion, x, dominio_final)
 
         print("Recorrido de la función:", rango)
-        messagebox.showinfo("Recorrido", f"Recorrido de la función: {rango}")
 
         return rango
     except Exception as e:
@@ -226,33 +228,67 @@ def paso_a_paso():
 
         texto_mostrar = "\n".join(pasos)
         texto_mostrar += f"\n\nPar ordenado: ({valor}, {current})"
-        messagebox.showinfo("Desarrollo paso a paso", texto_mostrar)
-
+        texto_resultados.insert("end", f"Solucion paso a paso \n")
+        texto_resultados.insert("end", f"{texto_mostrar}\n")
+        texto_resultados.insert("end","-----------------------------------------------------------------------------------------")
     except sp.SympifyError:
         messagebox.showerror("Error", "Funcion no valida (no se pudo interpretar).")
     except Exception as e:
         messagebox.showerror("Error", f"No se pudo realizar el desarrollo paso a paso.\nDetalles: {e}")
 
-#--------------------Variables--------------------------------------------------
-root=tk.Tk()
+root = tk.Tk()
 root.title("Analizador de funciones")
-text=tk.StringVar()
-root.geometry("350x350")
-text.set("Ingrese aqui su funcion")
-tk.Label(root,textvariable=text, font=("Arial",16)).pack()
+root.geometry("1280x720")
+root.configure(bg="#1b3c42")
 
-entrada= tk.Entry(root)
-entrada.pack()
+# ------------------- Entradas y botones -------------------
+text = tk.StringVar(value="Ingrese aqui su funcion")
+tk.Label(root, textvariable=text, font=("Arial", 16, "bold"),
+         bg="#1b3c42", fg="white").pack(pady=5)
 
-text2=tk.StringVar()
-text2.set("x a evaluar (opcional)")
-tk.Label(root,textvariable=text2, font=("Arial",16)).pack()
-entrada2= tk.Entry(root)
-entrada2.pack()
-
-tk.Button(root,text="Analizar funcion", width=13,height=1,command=analizis).pack()
-tk.Button(root,text="Graficar funcion", width=13,height=1,command=graficar).pack()
-tk.Button(root, text="Desarrollo paso a paso", width=20, height=1, command=paso_a_paso).pack()
+entrada = tk.Entry(root, width=40)
+entrada.pack(pady=5)
 
 
-root.mainloop() #esto mantendra viva la venta hasta cerrarla
+
+text2 = tk.StringVar(value="x a evaluar (opcional)")
+tk.Label(root, textvariable=text2, font=("Arial", 16, "bold"),
+         bg="#1b3c42", fg="white").pack(pady=5)
+
+entrada2 = tk.Entry(root, width=40)
+entrada2.pack(pady=5)
+
+tk.Button(root, text="Analizar funcion", width=20, height=1, command=analizis).pack(pady=5)
+tk.Button(root, text="Graficar funcion", width=20, height=1, command=graficar).pack(pady=5)
+tk.Button(root, text="Desarrollo paso a paso", width=20, height=1, command=paso_a_paso).pack(pady=5)
+
+# ------------------- Contenedor principal -------------------
+# --------- Sección de cuadrados ---------
+frame_contenedor = tk.Frame(root, bg="#1b3c42")
+frame_contenedor.pack(pady=20, fill="both", expand=True)
+
+# Cuadro del gráfico
+cuadro_grafico = tk.Frame(frame_contenedor, width=600, height=400, bg="white")
+cuadro_grafico.pack(side="left", padx=20, pady=20)
+cuadro_grafico.pack_propagate(False)
+
+# Cuadro de resultados con scrollbar
+frame_resultados = tk.Frame(frame_contenedor, bg="white")
+frame_resultados.pack(side="left", padx=20, pady=20, fill="both", expand=True)
+
+# Text + Scrollbar
+scrollbar = tk.Scrollbar(frame_resultados)
+scrollbar.pack(side="right", fill="y")
+
+cuadro_resultados = tk.Text(frame_resultados, wrap="word", yscrollcommand=scrollbar.set, font=("Arial", 12))
+cuadro_resultados.pack(fill="both", expand=True)
+
+scrollbar.config(command=cuadro_resultados.yview)
+
+# Área de texto para mostrar dominio, recorrido e intersecciones
+texto_resultados = tk.Text(cuadro_resultados, width=100, height=30, bg="black", fg="white", font=("Arial", 10))
+texto_resultados.pack(expand=True, padx=10, pady=10)
+
+# Insertar texto de ejemplo
+
+root.mainloop()
