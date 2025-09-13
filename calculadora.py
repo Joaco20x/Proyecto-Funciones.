@@ -1,10 +1,11 @@
 #---------------------Librerias---------------------------------
 import tkinter as tk
 from tkinter import messagebox
+import math 
 import sympy as sp
 import matplotlib.pyplot as plt
 from sympy.parsing.sympy_parser import parse_expr
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 
 #---------------------Intersecciones-----------------------------
 def interseccion():
@@ -160,6 +161,7 @@ def graficar():
         funcion = sp.sympify(texto)
         print(f"f(x) = {funcion}")
         valor=entrada2.get()
+        num=None
         
         if valor != "":
             num=float(valor) #Convertimos el valor ingresado por el usuario a un flotante
@@ -170,20 +172,31 @@ def graficar():
         
         f = sp.lambdify(x_pri, funcion)         # toma la forma simbolica y la convierte en una funcion
         x = [i/10 for i in range(-100,101)]        # genera un rango en el grafico eje x
-        y = [f(val) for val in x]               # rango del grafico en el eje y
-    
-       
+        y = []               # rango del grafico en el eje y
+
+        for val in x:
+            try:
+                ynue = f(val)  # evaluamos la función
+                y.append(ynue) # agregamos el valor a y
+            except:
+                y.append(None) # si da error no se coloca nada
+
+        ax.clear()
+
+        ax.axhline(0, color="black", linewidth=1.5)
+        ax.axvline(0, color="black", linewidth=1.5)
         ax.plot(x, y, label=f"f(x) = {texto}")
-        ax.scatter(num, resultado, color="red", label=f"Punto ({num}, {resultado})") #Graficamos el punto  y desimos su ubicacion
+        if num is not None and resultado is not None:
+            ax.scatter(num, resultado, color="red", label=f"Punto ({num}, {resultado})") # puntos 
+        ax.plot(x, y, label=f"f(x) = {texto}")
         ax.set_title(f"f(x) = {texto}")    # muestra el titulo del grafico
         ax.set_xlabel("x")                 # muestra titulo eje x 
         ax.set_ylabel("f(x)")              # titulo en eje y
         ax.grid(True)                  # activa las rejillas del grafico 
-        ax.legend()
-            
+        ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 
         canvas.draw()
-    except Exception:
+    except ValueError:
         messagebox.showerror("Error", f"No se pudo graficar la función")
 
 #---------------------------Solox---------------------------------------
@@ -241,7 +254,7 @@ def paso_a_paso():
 
 root = tk.Tk()
 root.title("Analizador de funciones")
-root.geometry("1280x720")
+root.geometry("1600x900")
 root.configure(bg="#1b3c42")
 
 # ------------------- Entradas y botones -------------------
@@ -271,13 +284,20 @@ frame_contenedor = tk.Frame(root, bg="#1b3c42")
 frame_contenedor.pack(pady=20, fill="both", expand=True)
 
 # Cuadro del gráfico
-cuadro_grafico = tk.Frame(frame_contenedor, width=600, height=400, bg="white")
-cuadro_grafico.pack(side="left", padx=20, pady=20)
+cuadro_grafico = tk.Frame(frame_contenedor, width=700, height=500, bg="white")
+cuadro_grafico.pack(side="left", padx=20, pady=20, fill="both", expand=True)
 
+fig, ax = plt.subplots(figsize=(7,4))
+fig.subplots_adjust(right=0.75)
 
-fig, ax = plt.subplots(figsize=(6,4))
 canvas = FigureCanvasTkAgg(fig, master=cuadro_grafico)
+canvas.draw()
 canvas.get_tk_widget().pack(fill="both", expand=True)
+
+toolbar = NavigationToolbar2Tk(canvas, cuadro_grafico)
+toolbar.pack(side="top", fill="x") 
+toolbar.update()
+
 
 # Cuadro de resultados con scrollbar
 frame_resultados = tk.Frame(frame_contenedor, bg="white")
