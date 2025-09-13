@@ -1,7 +1,6 @@
 #---------------------Librerias---------------------------------
 import tkinter as tk
 from tkinter import messagebox
-import math 
 import sympy as sp
 import matplotlib.pyplot as plt
 from sympy.parsing.sympy_parser import parse_expr
@@ -171,7 +170,7 @@ def graficar():
             print(f"Resultado de la funcion: {resultado}")
         
         f = sp.lambdify(x_pri, funcion)         # toma la forma simbolica y la convierte en una funcion
-        x = [i/10 for i in range(-100,101)]        # genera un rango en el grafico eje x
+        x = [i/10 for i in range(-500,501)]        # genera un rango en el grafico eje x
         y = []               # rango del grafico en el eje y
 
         for val in x:
