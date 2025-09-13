@@ -1,10 +1,10 @@
 #---------------------Librerias---------------------------------
 import tkinter as tk
 from tkinter import messagebox
-import math 
 import sympy as sp
 import matplotlib.pyplot as plt
 from sympy.parsing.sympy_parser import parse_expr
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 #---------------------Intersecciones-----------------------------
 def interseccion():
@@ -169,17 +169,20 @@ def graficar():
             print(f"Resultado de la funcion: {resultado}")
         
         f = sp.lambdify(x_pri, funcion)         # toma la forma simbolica y la convierte en una funcion
-        x = [i/10 for i in range(0,100)]        # genera un rango en el grafico eje x
+        x = [i/10 for i in range(-100,101)]        # genera un rango en el grafico eje x
         y = [f(val) for val in x]               # rango del grafico en el eje y
-        
-        plt.plot(x, y) 
-        plt.scatter(num, resultado, color="red", label=f"Punto ({num}, {resultado})") #Graficamos el punto  y desimos su ubicacion
-        plt.title(f"f(x) = {texto}")    # muestra el titulo del grafico
-        plt.xlabel("x")                 # muestra titulo eje x 
-        plt.ylabel("f(x)")              # titulo en eje y
-        plt.grid(True)                  # activa las rejillas del grafico 
-        plt.legend()
-        plt.show()    
+    
+       
+        ax.plot(x, y, label=f"f(x) = {texto}")
+        ax.scatter(num, resultado, color="red", label=f"Punto ({num}, {resultado})") #Graficamos el punto  y desimos su ubicacion
+        ax.set_title(f"f(x) = {texto}")    # muestra el titulo del grafico
+        ax.set_xlabel("x")                 # muestra titulo eje x 
+        ax.set_ylabel("f(x)")              # titulo en eje y
+        ax.grid(True)                  # activa las rejillas del grafico 
+        ax.legend()
+            
+
+        canvas.draw()
     except Exception:
         messagebox.showerror("Error", f"No se pudo graficar la función")
 
@@ -246,7 +249,7 @@ text = tk.StringVar(value="Ingrese aqui su funcion")
 tk.Label(root, textvariable=text, font=("Arial", 16, "bold"),
          bg="#1b3c42", fg="white").pack(pady=5)
 
-entrada = tk.Entry(root, width=40)
+entrada = tk.Entry(root, width=40, font=("Arial", 14))
 entrada.pack(pady=5)
 
 
@@ -255,12 +258,12 @@ text2 = tk.StringVar(value="x a evaluar (opcional)")
 tk.Label(root, textvariable=text2, font=("Arial", 16, "bold"),
          bg="#1b3c42", fg="white").pack(pady=5)
 
-entrada2 = tk.Entry(root, width=40)
+entrada2 = tk.Entry(root, width=40, font=("Arial", 14))
 entrada2.pack(pady=5)
 
-tk.Button(root, text="Analizar funcion", width=20, height=1, command=analizis).pack(pady=5)
-tk.Button(root, text="Graficar funcion", width=20, height=1, command=graficar).pack(pady=5)
-tk.Button(root, text="Desarrollo paso a paso", width=20, height=1, command=paso_a_paso).pack(pady=5)
+tk.Button(root, text="Analizar funcion", width=20, height=1, command=analizis, font=("Arial", 10, "bold"), fg="white", bg="black").pack(pady=5)
+tk.Button(root, text="Graficar funcion", width=20, height=1, command=graficar, font=("Arial", 10, "bold"), fg="white", bg="black").pack(pady=5)
+tk.Button(root, text="Desarrollo paso a paso", width=20, height=1, command=paso_a_paso, font=("Arial", 10, "bold"), fg="white", bg="black").pack(pady=5)
 
 # ------------------- Contenedor principal -------------------
 # --------- Sección de cuadrados ---------
@@ -270,7 +273,11 @@ frame_contenedor.pack(pady=20, fill="both", expand=True)
 # Cuadro del gráfico
 cuadro_grafico = tk.Frame(frame_contenedor, width=600, height=400, bg="white")
 cuadro_grafico.pack(side="left", padx=20, pady=20)
-cuadro_grafico.pack_propagate(False)
+
+
+fig, ax = plt.subplots(figsize=(6,4))
+canvas = FigureCanvasTkAgg(fig, master=cuadro_grafico)
+canvas.get_tk_widget().pack(fill="both", expand=True)
 
 # Cuadro de resultados con scrollbar
 frame_resultados = tk.Frame(frame_contenedor, bg="white")
