@@ -297,7 +297,6 @@ toolbar = NavigationToolbar2Tk(canvas, cuadro_grafico)
 toolbar.pack(side="top", fill="x") 
 toolbar.update()
 
-
 # Cuadro de resultados con scrollbar
 frame_resultados = tk.Frame(frame_contenedor, bg="white")
 frame_resultados.pack(side="left", padx=20, pady=20, fill="both", expand=True)
